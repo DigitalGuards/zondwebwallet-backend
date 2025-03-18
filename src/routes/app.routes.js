@@ -1,9 +1,16 @@
 import express from "express";
 import nodemailer from "nodemailer";
+import rateLimit from 'express-rate-limit';
 
 const appRouter = express.Router();
 
-appRouter.post("/support", (req, res) => {
+const supportRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 requests per windowMs
+    message: { message: "Too many requests, please try again later." }
+});
+
+appRouter.post("/support", supportRateLimit, (req, res) => {
     const { name, email, message, subject } = req.body;
 
     if (!name || !email || !message || !subject) {
